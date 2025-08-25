@@ -1,8 +1,6 @@
 extends State
 class_name WalkingState
 
-const SPEED = 5.0
-
 func physics_update(delta: float):
 	if not player.is_on_floor():
 		state_machine.change_state("falling")
@@ -19,10 +17,10 @@ func physics_update(delta: float):
 	
 	var direction := get_camera_relative_direction(input_dir)
 	if direction.length() > 0:
-		player.velocity.x = direction.x * SPEED
-		player.velocity.z = direction.z * SPEED
+		player.velocity.x = direction.x * player.movement_speed
+		player.velocity.z = direction.z * player.movement_speed
 		
 		var target_rotation = atan2(direction.x, direction.z)
-		player.rotation.y = lerp_angle(player.rotation.y, target_rotation, 10.0 * delta)
+		player.rotation.y = lerp_angle(player.rotation.y, target_rotation, player.ground_rotation_speed * delta)
 	
 	player.move_and_slide()

@@ -4,9 +4,21 @@ var state_machine: StateMachine
 var debug_ui: Control
 var phantom_camera: PhantomCamera3D
 
+@export_group("Camera Controls")
 @export var mouse_sensitivity: float = 0.05
+@export var controller_sensitivity: float = 2.0
 @export var min_pitch: float = -89.9
 @export var max_pitch: float = 50
+
+@export_group("Movement Physics")
+@export var movement_speed: float = 5.0
+@export var jump_velocity: float = 4.5
+@export var ground_rotation_speed: float = 10.0
+@export var air_rotation_speed: float = 8.0
+
+@export_group("Physics Settings")
+@export var gravity_multiplier: float = 1.0
+@export var air_control_factor: float = 1.0
 
 func _ready():
 	phantom_camera = get_tree().current_scene.get_node("PlayerCam")
@@ -32,6 +44,8 @@ func _physics_process(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	state_machine.update(delta)
+	if phantom_camera and phantom_camera.get_follow_mode() == phantom_camera.FollowMode.THIRD_PERSON:
+		_handle_controller_camera(delta)
 	if debug_ui:
 		debug_ui.update_debug_info()
 
@@ -59,6 +73,22 @@ func _handle_camera_input(event: InputEvent) -> void:
 		camera_rotation_degrees.x = clampf(camera_rotation_degrees.x, min_pitch, max_pitch)
 		
 		camera_rotation_degrees.y -= event.relative.x * mouse_sensitivity
+		camera_rotation_degrees.y = wrapf(camera_rotation_degrees.y, 0, 360)
+		
+		phantom_camera.set_third_person_rotation_degrees(camera_rotation_degrees)
+
+func _handle_controller_camera(delta: float) -> void:
+	var look_vector := Vector2.ZERO
+	look_vector.x = Input.get_action_strength("camera_look_right") - Input.get_action_strength("camera_look_left")
+	look_vector.y = Input.get_action_strength("camera_look_down") - Input.get_action_strength("camera_look_up")
+	
+	if look_vector.length() > 0.1:
+		var camera_rotation_degrees: Vector3 = phantom_camera.get_third_person_rotation_degrees()
+		
+		camera_rotation_degrees.x -= look_vector.y * controller_sensitivity * 60.0 * delta
+		camera_rotation_degrees.x = clampf(camera_rotation_degrees.x, min_pitch, max_pitch)
+		
+		camera_rotation_degrees.y -= look_vector.x * controller_sensitivity * 60.0 * delta
 		camera_rotation_degrees.y = wrapf(camera_rotation_degrees.y, 0, 360)
 		
 		phantom_camera.set_third_person_rotation_degrees(camera_rotation_degrees)

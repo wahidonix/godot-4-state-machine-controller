@@ -1,8 +1,6 @@
 extends State
 class_name IdleState
 
-const SPEED = 5.0
-
 func physics_update(delta: float):
 	if not player.is_on_floor():
 		state_machine.change_state("falling")
@@ -17,7 +15,7 @@ func physics_update(delta: float):
 		state_machine.change_state("walking")
 		return
 	
-	player.velocity.x = move_toward(player.velocity.x, 0, SPEED)
-	player.velocity.z = move_toward(player.velocity.z, 0, SPEED)
+	player.velocity.x = move_toward(player.velocity.x, 0, player.movement_speed)
+	player.velocity.z = move_toward(player.velocity.z, 0, player.movement_speed)
 	
 	player.move_and_slide()
