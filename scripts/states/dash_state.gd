@@ -10,12 +10,8 @@ func enter():
 	# Get input direction when dash starts
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	
-	if input_dir.length() > 0.1:
-		# Dash in input direction (camera-relative)
-		dash_direction = get_camera_relative_direction(input_dir).normalized()
-	else:
-		# Dash forward relative to player facing direction if no input
-		dash_direction = -player.transform.basis.z.normalized()
+	# Dash in input direction (camera-relative)
+	dash_direction = get_camera_relative_direction(input_dir).normalized()
 	
 	# Apply dash velocity
 	player.velocity.x = dash_direction.x * player.dash_speed

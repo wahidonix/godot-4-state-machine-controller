@@ -7,7 +7,8 @@ func enter():
 func physics_update(delta: float):
 	player.velocity += player.get_gravity() * player.gravity_multiplier * delta
 	
-	if Input.is_action_just_pressed("dash") and player.can_dash():
+	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	if Input.is_action_just_pressed("dash") and player.can_dash() and input_dir.length() > 0.1:
 		player.start_dash_cooldown()
 		state_machine.change_state("dash")
 		return
@@ -15,8 +16,6 @@ func physics_update(delta: float):
 	if player.velocity.y <= 0:
 		state_machine.change_state("falling")
 		return
-	
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	var direction := get_camera_relative_direction(input_dir)
 	
 	if direction.length() > 0:

@@ -4,20 +4,18 @@ class_name FallingState
 func physics_update(delta: float):
 	player.velocity += player.get_gravity() * player.gravity_multiplier * delta
 	
-	if Input.is_action_just_pressed("dash") and player.can_dash():
+	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	if Input.is_action_just_pressed("dash") and player.can_dash() and input_dir.length() > 0.1:
 		player.start_dash_cooldown()
 		state_machine.change_state("dash")
 		return
 	
 	if player.is_on_floor():
-		var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 		if input_dir != Vector2.ZERO:
 			state_machine.change_state("walking")
 		else:
 			state_machine.change_state("idle")
 		return
-	
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	var direction := get_camera_relative_direction(input_dir)
 	
 	if direction.length() > 0:
