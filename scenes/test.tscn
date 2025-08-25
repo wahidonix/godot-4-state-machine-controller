@@ -1,0 +1,75 @@
+[gd_scene load_steps=11 format=3 uid="uid://dgocunbnntxxo"]
+
+[ext_resource type="Texture2D" uid="uid://dkjfn8grggt2y" path="res://textures/Dark/texture_07.png" id="1_j5jx5"]
+[ext_resource type="PackedScene" uid="uid://bh75eqs3layr" path="res://scenes/player.tscn" id="2_lpvoh"]
+[ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="3_at5dv"]
+[ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="4_jcd4p"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_uacia"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_bl13t"]
+sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+
+[sub_resource type="Sky" id="Sky_iyx0m"]
+sky_material = SubResource("ProceduralSkyMaterial_bl13t")
+
+[sub_resource type="Environment" id="Environment_74lek"]
+background_mode = 2
+sky = SubResource("Sky_iyx0m")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yk7ts"]
+albedo_texture = ExtResource("1_j5jx5")
+uv1_triplanar = true
+
+[sub_resource type="Resource" id="Resource_ajshl"]
+script = ExtResource("4_jcd4p")
+duration = 1.0
+transition = 0
+ease = 2
+
+[node name="Test" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_74lek")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
+shadow_enabled = true
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="."]
+material_override = SubResource("StandardMaterial3D_yk7ts")
+use_collision = true
+radius = 80.0
+height = 10.0
+sides = 50
+
+[node name="CSGCylinder3D2" type="CSGCylinder3D" parent="CSGCylinder3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.845276, 0)
+operation = 2
+radius = 75.0
+height = 10.0
+sides = 50
+
+[node name="Player" parent="." instance=ExtResource("2_lpvoh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.34991, -3.15472, -2.96394)
+
+[node name="PhantomCamera3D" type="Node3D" parent="." node_paths=PackedStringArray("follow_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.34991, -1.15472, 2.53606)
+script = ExtResource("3_at5dv")
+follow_mode = 6
+follow_target = NodePath("../Player")
+tween_resource = SubResource("Resource_ajshl")
+follow_offset = Vector3(0, 2, 4.5)
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
+
+[node name="Camera3D" type="Camera3D" parent="."]
+physics_interpolation_mode = 1
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.34991, -1.15472, 2.53606)
+
+[node name="PhantomCameraHost" type="Node" parent="Camera3D"]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("5_uacia")
+metadata/_custom_type_script = "uid://bd046eokvcnu2"
