@@ -6,6 +6,11 @@ func physics_update(delta: float):
 		state_machine.change_state("falling")
 		return
 	
+	if Input.is_action_just_pressed("dash") and player.can_dash():
+		player.start_dash_cooldown()
+		state_machine.change_state("dash")
+		return
+		
 	if Input.is_action_just_pressed("jump"):
 		state_machine.change_state("jumping")
 		return

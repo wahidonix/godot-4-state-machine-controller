@@ -130,6 +130,29 @@ if direction.length() > 0:
 - Allows camera-relative air control for movement
 - Character rotates to face movement direction while falling
 - Transitions to "idle" or "walking" when landing (based on input)
+- Can transition to "dash" when dash input is pressed
+
+### DashState
+**File:** `scripts/states/dash_state.gd`
+
+**Purpose:** Handles quick burst movement for evasion and traversal.
+
+**Behavior:**
+- Provides high-speed movement (15.0 units/second by default)
+- Uses camera-relative input direction or player forward direction
+- Limited duration (0.3 seconds by default) with cooldown system
+- Reduced gravity during dash for smoother movement
+- Character instantly rotates to face dash direction
+- Smooth velocity decay back to normal speeds
+
+**Entry Conditions:**
+- Can be triggered from any other state (idle, walking, jumping, falling)
+- Requires dash cooldown to be available
+- Input: Left Shift (keyboard) or B Button (controller)
+
+**Exit Conditions:**
+- Timer expires OR velocity drops to near-normal levels
+- Transitions based on final state: airborne → jumping/falling, grounded → idle/walking
 
 **Landing Logic:**
 ```gdscript
@@ -149,13 +172,25 @@ if player.is_on_floor():
 	  ↑         ↓
 	  └─────────┘
 	  (when landing)
+	  
+	    [Dash] ←─── (from any state)
+	      ↓
+	  (back to appropriate state)
 ```
+
+**Dash Integration:**
+- Dash can be triggered from any state when available
+- After dash ends, returns to contextually appropriate state
+- Cooldown prevents spam and maintains game balance
 
 ## Constants and Configuration
 
-All states share these constants (defined in each state file):
-- `SPEED = 5.0` - Movement speed in units/second
-- `JUMP_VELOCITY = 4.5` - Initial jump velocity
+All movement values are now configurable through exported variables in the player script:
+- `movement_speed = 5.0` - Movement speed in units/second
+- `jump_velocity = 4.5` - Initial jump velocity
+- `dash_speed = 15.0` - Dash burst speed in units/second
+- `dash_duration = 0.3` - How long dash lasts in seconds
+- `dash_cooldown = 1.0` - Time between dashes in seconds
 
 ## Physics Integration
 

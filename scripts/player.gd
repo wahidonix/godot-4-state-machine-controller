@@ -20,6 +20,13 @@ var phantom_camera: PhantomCamera3D
 @export var gravity_multiplier: float = 1.0
 @export var air_control_factor: float = 1.0
 
+@export_group("Dash Settings")
+@export var dash_speed: float = 15.0
+@export var dash_duration: float = 0.3
+@export var dash_cooldown: float = 1.0
+
+var dash_cooldown_timer: float = 0.0
+
 func _ready():
 	phantom_camera = get_tree().current_scene.get_node("PlayerCam")
 	state_machine = StateMachine.new(self, phantom_camera)
@@ -28,6 +35,7 @@ func _ready():
 	state_machine.add_state("walking", WalkingState.new(self))
 	state_machine.add_state("jumping", JumpingState.new(self))
 	state_machine.add_state("falling", FallingState.new(self))
+	state_machine.add_state("dash", DashState.new(self))
 	
 	state_machine.change_state("idle")
 	
@@ -46,6 +54,11 @@ func _process(delta: float) -> void:
 	state_machine.update(delta)
 	if phantom_camera and phantom_camera.get_follow_mode() == phantom_camera.FollowMode.THIRD_PERSON:
 		_handle_controller_camera(delta)
+	
+	# Update dash cooldown
+	if dash_cooldown_timer > 0.0:
+		dash_cooldown_timer -= delta
+		
 	if debug_ui:
 		debug_ui.update_debug_info()
 
@@ -76,6 +89,12 @@ func _handle_camera_input(event: InputEvent) -> void:
 		camera_rotation_degrees.y = wrapf(camera_rotation_degrees.y, 0, 360)
 		
 		phantom_camera.set_third_person_rotation_degrees(camera_rotation_degrees)
+
+func can_dash() -> bool:
+	return dash_cooldown_timer <= 0.0
+
+func start_dash_cooldown():
+	dash_cooldown_timer = dash_cooldown
 
 func _handle_controller_camera(delta: float) -> void:
 	var look_vector := Vector2.ZERO

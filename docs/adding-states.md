@@ -80,6 +80,7 @@ func _ready():
     state_machine.add_state("running", RunningState.new(self))  # Add this line
     state_machine.add_state("jumping", JumpingState.new(self))
     state_machine.add_state("falling", FallingState.new(self))
+    state_machine.add_state("dash", DashState.new(self))  # Dash state is included
     
     state_machine.change_state("idle")
 ```
@@ -116,28 +117,50 @@ func physics_update(delta: float):
 
 ## Common State Patterns
 
-### State with Timer
+### State with Timer (Real Example: DashState)
+The dash state is a perfect example of a timed state with cooldown system:
+
 ```gdscript
 extends State
 class_name DashState
 
-const DASH_SPEED = 15.0
-const DASH_DURATION = 0.3
-
 var dash_timer: float = 0.0
+var dash_direction: Vector3 = Vector3.ZERO
 
 func enter():
-    dash_timer = DASH_DURATION
+    dash_timer = player.dash_duration  # Uses exported variable
+    
+    # Get input direction when dash starts
+    var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+    
+    if input_dir.length() > 0.1:
+        # Camera-relative dash direction
+        dash_direction = get_camera_relative_direction(input_dir).normalized()
+    else:
+        # Forward dash if no input
+        dash_direction = -player.transform.basis.z.normalized()
+    
+    # Apply dash velocity
+    player.velocity.x = dash_direction.x * player.dash_speed
+    player.velocity.z = dash_direction.z * player.dash_speed
 
 func physics_update(delta: float):
     dash_timer -= delta
     
-    if dash_timer <= 0:
-        state_machine.change_state("idle")
+    # End dash when timer expires or speed drops too low
+    if dash_timer <= 0.0 or player.velocity.length() <= player.movement_speed * 1.1:
+        _end_dash()
         return
     
-    # Apply dash movement...
+    # Smooth velocity decay and reduced gravity
+    # ... rest of implementation
 ```
+
+**Key Features:**
+- **Timer-based duration** with automatic exit
+- **Camera-relative direction** calculation  
+- **Velocity management** with smooth decay
+- **Smart state transitions** based on final conditions
 
 ### State with Animation
 ```gdscript
@@ -181,14 +204,18 @@ func exit():
 - Use descriptive names ending in "State"
 - Keep consistent with your game's terminology
 
-### 2. Constants
-- Define speed and timing constants at the top of each state
-- Consider making them configurable via exported variables
+### 2. Variables and Configuration
+- **Use exported variables** from the player script instead of hardcoded constants
+- Reference player properties like `player.movement_speed`, `player.jump_velocity`
+- **Modern approach**: `player.dash_speed` instead of `const DASH_SPEED = 15.0`
+- This allows real-time tuning in the inspector without code changes
 
 ### 3. Transitions
-- Always check for higher-priority transitions first (falling, jumping)
-- Group similar transition checks together
+- **Check dash first** - it can interrupt any state when available
+- Always check for higher-priority transitions (falling, jumping, dash)
+- Group similar transition checks together  
 - Use early returns to avoid nested conditions
+- **Example priority order**: dash → falling → jumping → movement states
 
 ### 4. State Data
 - Avoid storing data that persists between state changes in the state itself

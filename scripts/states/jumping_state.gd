@@ -7,6 +7,11 @@ func enter():
 func physics_update(delta: float):
 	player.velocity += player.get_gravity() * player.gravity_multiplier * delta
 	
+	if Input.is_action_just_pressed("dash") and player.can_dash():
+		player.start_dash_cooldown()
+		state_machine.change_state("dash")
+		return
+	
 	if player.velocity.y <= 0:
 		state_machine.change_state("falling")
 		return

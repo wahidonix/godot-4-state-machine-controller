@@ -219,6 +219,28 @@ const SPEED = 5.0  # Air control speed
 
 ---
 
+### DashState
+**File:** `scripts/states/dash_state.gd`
+
+Handles quick burst movement for evasion and traversal.
+
+#### Key Behaviors
+- **High-speed movement** using exported `dash_speed` variable (15.0 by default)
+- **Camera-relative direction** or forward direction if no input
+- **Timed duration** with automatic state transition when complete
+- **Cooldown system** prevents dash spam
+- **Reduced gravity** (30%) during dash for smoother feel
+- **Instant rotation** to face dash direction
+- **Smart transitions** back to appropriate state based on context
+
+#### Special Features
+- **Velocity decay** smoothly reduces speed back to normal
+- **Ground vs Air** handling - different Y-velocity behavior
+- **Universal access** - can be triggered from any other state
+- **Physics integration** - works with existing collision and gravity systems
+
+---
+
 ## Debug System
 
 ### DebugUI
@@ -254,8 +276,26 @@ var phantom_camera: PhantomCamera3D  # Camera reference for controls
 
 # Camera settings
 @export var mouse_sensitivity: float = 0.05
+@export var controller_sensitivity: float = 2.0
 @export var min_pitch: float = -89.9
 @export var max_pitch: float = 50
+
+# Movement settings
+@export var movement_speed: float = 5.0
+@export var jump_velocity: float = 4.5
+@export var ground_rotation_speed: float = 10.0
+@export var air_rotation_speed: float = 8.0
+
+# Physics settings
+@export var gravity_multiplier: float = 1.0
+@export var air_control_factor: float = 1.0
+
+# Dash settings
+@export var dash_speed: float = 15.0
+@export var dash_duration: float = 0.3
+@export var dash_cooldown: float = 1.0
+
+var dash_cooldown_timer: float = 0.0
 ```
 
 #### Methods
@@ -290,6 +330,15 @@ Processes mouse motion for camera rotation using Phantom Camera's third-person m
 - Clamps vertical rotation (pitch) to prevent camera flipping
 - Wraps horizontal rotation (yaw) for smooth 360° movement
 
+##### `can_dash() -> bool`
+Checks if dash is currently available (cooldown has expired).
+
+**Returns:**
+- `bool`: true if dash can be used, false if on cooldown
+
+##### `start_dash_cooldown() -> void`
+Starts the dash cooldown timer, preventing dash use until timer expires.
+
 ---
 
 ## Input Actions
@@ -304,6 +353,7 @@ The following input actions must be defined in `project.godot`:
 
 ### Actions
 - `jump` - Space key (physical_keycode: 32)
+- `dash` - Left Shift key (physical_keycode: 4194325)
 
 ### Camera Controls
 - **Mouse Movement** - Camera rotation (automatically captured)
@@ -325,10 +375,16 @@ const JUMP_VELOCITY = 4.5        # Initial jump velocity
 
 # Camera Controls
 const MOUSE_SENSITIVITY = 0.05   # Mouse look sensitivity
+const CONTROLLER_SENSITIVITY = 2.0  # Controller look sensitivity
 const MIN_PITCH = -89.9          # Minimum camera pitch (degrees)
 const MAX_PITCH = 50.0           # Maximum camera pitch (degrees)
 const GROUND_ROTATION_SPEED = 10.0  # Character rotation speed on ground
 const AIR_ROTATION_SPEED = 8.0   # Character rotation speed in air
+
+# Dash System
+const DASH_SPEED = 15.0          # Dash burst speed
+const DASH_DURATION = 0.3        # Dash duration in seconds
+const DASH_COOLDOWN = 1.0        # Cooldown between dashes
 
 # Debug
 const DEBUG_UPDATE_RATE = 60     # Updates per second (when visible)

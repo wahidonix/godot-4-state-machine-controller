@@ -26,6 +26,7 @@ This project provides a modular 3D player controller for Godot 4.4.1 using a sta
 - ✅ **Camera-relative movement** - WASD moves relative to camera direction
 - ✅ **Automatic character rotation** - player faces movement direction
 - ✅ **Third-person camera** with Phantom Camera integration
+- ✅ **Dash system** with cooldown and camera-relative direction
 - ✅ Real-time debug UI
 - ✅ Easy to extend with new states
 - ✅ Clean separation of concerns
@@ -35,5 +36,13 @@ This project provides a modular 3D player controller for Godot 4.4.1 using a sta
 - **WASD** - Move relative to camera direction
 - **Mouse** - Look around / rotate camera
 - **Space** - Jump
+- **Left Shift** - Dash (with cooldown)
 - **ESC** - Toggle mouse capture/release
 - **`** (backtick) - Toggle debug overlay
+
+## Controller Support
+
+- **Left Stick** - Movement
+- **Right Stick** - Camera look
+- **A Button** - Jump (Xbox) / X Button (PlayStation)
+- **B Button** - Dash (Xbox) / Circle Button (PlayStation)
