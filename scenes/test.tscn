@@ -56,19 +56,21 @@ sides = 50
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.34991, -3.15472, -2.96394)
 
 [node name="PlayerCam" type="Node3D" parent="." node_paths=PackedStringArray("follow_target")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.34991, -1.65472, 2.03606)
+transform = Transform3D(-1, 0, 9.53674e-08, 0, 1, 0, -9.53674e-08, 0, -1, 4.34991, -1.65472, -7.96394)
 script = ExtResource("3_at5dv")
 follow_mode = 6
 follow_target = NodePath("../Player")
 tween_resource = SubResource("Resource_ajshl")
+tween_on_load = false
 follow_offset = Vector3(0, 1.5, 0)
 follow_distance = 5.0
+horizontal_rotation_offset = 3.14159
 spring_length = 5.0
 metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [node name="Camera3D" type="Camera3D" parent="."]
 physics_interpolation_mode = 1
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.34991, -1.65472, 2.03606)
+transform = Transform3D(-1, 0, 9.53674e-08, 0, 1, 0, -9.53674e-08, 0, -1, 4.34991, -1.65472, -7.96394)
 
 [node name="PhantomCameraHost" type="Node" parent="Camera3D"]
 process_priority = 300

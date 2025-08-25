@@ -25,6 +25,7 @@ var state_machine
 - `update(delta)` - Called every frame during `_process()`
 - `physics_update(delta)` - Called every physics frame during `_physics_process()`
 - `handle_input(event)` - Called for input events during `_input()`
+- `get_camera_relative_direction(input_dir)` - Converts input to camera-relative movement direction
 
 ### 2. StateMachine (Manager Class)
 **File:** `scripts/state_machine.gd`
@@ -37,12 +38,17 @@ class_name StateMachine
 
 var current_state: State
 var states: Dictionary = {}
+var player: CharacterBody3D
+var camera: PhantomCamera3D
 ```
 
 **Key Methods:**
 - `add_state(name, state)` - Registers a new state
 - `change_state(name)` - Transitions to a different state
 - `update(delta)` / `physics_update(delta)` / `handle_input(event)` - Delegates to current state
+
+**Camera Integration:**
+The state machine now holds a reference to the Phantom Camera for camera-relative movement calculations.
 
 ## State Implementations
 
@@ -78,12 +84,23 @@ elif input_dir != Vector2.ZERO:
 - Transitions to "idle" when no input detected
 - Can transition to "jumping" or "falling"
 
-**Movement Logic:**
+**Movement Logic (Camera-Relative):**
 ```gdscript
-var direction := (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-player.velocity.x = direction.x * SPEED
-player.velocity.z = direction.z * SPEED
+var direction := get_camera_relative_direction(input_dir)
+if direction.length() > 0:
+	player.velocity.x = direction.x * SPEED
+	player.velocity.z = direction.z * SPEED
+	
+	# Rotate player to face movement direction
+	var target_rotation = atan2(direction.x, direction.z)
+	player.rotation.y = lerp_angle(player.rotation.y, target_rotation, 10.0 * delta)
 ```
+
+**Camera-Relative Movement:**
+- **W/S**: Move forward/backward relative to camera direction
+- **A/D**: Move left/right relative to camera direction  
+- **Player Rotation**: Character automatically faces movement direction
+- **Smooth Turning**: Uses `lerp_angle()` for natural character rotation
 
 ### JumpingState
 **File:** `scripts/states/jumping_state.gd`
@@ -97,9 +114,11 @@ player.velocity.z = direction.z * SPEED
 - Transitions to "falling" when vertical velocity becomes negative
 
 **Air Control:**
-- Player can still move horizontally while jumping
+- Player can still move horizontally while jumping (camera-relative)
 - Same movement speed as ground movement
+- Character rotates to face movement direction while airborne
 - Smooth deceleration when no input
+- Slightly slower rotation speed (8.0) for more realistic air movement
 
 ### FallingState
 **File:** `scripts/states/falling_state.gd`
@@ -108,7 +127,8 @@ player.velocity.z = direction.z * SPEED
 
 **Behavior:**
 - Applies gravity continuously
-- Allows air control for movement
+- Allows camera-relative air control for movement
+- Character rotates to face movement direction while falling
 - Transitions to "idle" or "walking" when landing (based on input)
 
 **Landing Logic:**

@@ -9,7 +9,8 @@ var phantom_camera: PhantomCamera3D
 @export var max_pitch: float = 50
 
 func _ready():
-	state_machine = StateMachine.new(self)
+	phantom_camera = get_tree().current_scene.get_node("PlayerCam")
+	state_machine = StateMachine.new(self, phantom_camera)
 	
 	state_machine.add_state("idle", IdleState.new(self))
 	state_machine.add_state("walking", WalkingState.new(self))
@@ -23,7 +24,6 @@ func _ready():
 	get_tree().current_scene.add_child.call_deferred(debug_ui)
 	debug_ui.set_player(self)
 	
-	phantom_camera = get_tree().current_scene.get_node("PlayerCam")
 	if phantom_camera and phantom_camera.get_follow_mode() == phantom_camera.FollowMode.THIRD_PERSON:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 

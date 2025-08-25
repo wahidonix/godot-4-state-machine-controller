@@ -17,8 +17,12 @@ func physics_update(delta: float):
 		state_machine.change_state("idle")
 		return
 	
-	var direction := (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	player.velocity.x = direction.x * SPEED
-	player.velocity.z = direction.z * SPEED
+	var direction := get_camera_relative_direction(input_dir)
+	if direction.length() > 0:
+		player.velocity.x = direction.x * SPEED
+		player.velocity.z = direction.z * SPEED
+		
+		var target_rotation = atan2(direction.x, direction.z)
+		player.rotation.y = lerp_angle(player.rotation.y, target_rotation, 10.0 * delta)
 	
 	player.move_and_slide()

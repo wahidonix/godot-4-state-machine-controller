@@ -4,9 +4,11 @@ class_name StateMachine
 var current_state: State
 var states: Dictionary = {}
 var player: CharacterBody3D
+var camera: PhantomCamera3D
 
-func _init(player_ref: CharacterBody3D):
+func _init(player_ref: CharacterBody3D, camera_ref: PhantomCamera3D = null):
 	player = player_ref
+	camera = camera_ref
 
 func add_state(state_name: String, state: State):
 	states[state_name] = state

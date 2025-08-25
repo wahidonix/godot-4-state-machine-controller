@@ -60,6 +60,23 @@ Called for input events during `_input()`. Override for input handling.
 **Parameters:**
 - `event`: The input event
 
+##### `get_camera_relative_direction(input_dir: Vector2) -> Vector3`
+Converts 2D input vector to 3D world direction relative to camera orientation.
+
+**Parameters:**
+- `input_dir`: 2D input vector from Input.get_vector()
+
+**Returns:**
+- `Vector3`: Normalized world direction relative to camera
+
+**Usage:**
+```gdscript
+var input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+var direction = get_camera_relative_direction(input_dir)
+player.velocity.x = direction.x * SPEED
+player.velocity.z = direction.z * SPEED
+```
+
 ---
 
 ### StateMachine
@@ -72,15 +89,17 @@ Manages state transitions and delegates method calls to the active state.
 var current_state: State         # Currently active state
 var states: Dictionary = {}     # All registered states
 var player: CharacterBody3D     # Reference to player
+var camera: PhantomCamera3D      # Reference to camera for movement calculations
 ```
 
 #### Methods
 
-##### `_init(player_ref: CharacterBody3D)`
-Constructor that sets the player reference.
+##### `_init(player_ref: CharacterBody3D, camera_ref: PhantomCamera3D = null)`
+Constructor that sets the player and camera references.
 
 **Parameters:**
 - `player_ref`: The CharacterBody3D player instance
+- `camera_ref`: Optional PhantomCamera3D for camera-relative movement
 
 ##### `add_state(state_name: String, state: State) -> void`
 Registers a new state with the state machine.
@@ -152,9 +171,11 @@ const SPEED = 5.0  # Movement speed
 ```
 
 #### Key Behaviors
-- Applies movement based on input direction
+- Applies **camera-relative** movement based on input direction
+- Character **automatically rotates** to face movement direction
 - Transitions to idle when no input
 - Transitions to jumping/falling as appropriate
+- **Smooth rotation** using `lerp_angle()` with 10.0 speed multiplier
 
 ---
 
@@ -172,7 +193,9 @@ const JUMP_VELOCITY = 4.5   # Initial jump velocity
 #### Key Behaviors
 - Sets upward velocity on enter
 - Applies gravity
-- Allows air control
+- Allows **camera-relative air control**
+- Character **rotates to face movement direction** while jumping
+- **Slower rotation speed** (8.0) for realistic air movement
 - Transitions to falling when velocity becomes negative
 
 ---
@@ -189,7 +212,9 @@ const SPEED = 5.0  # Air control speed
 
 #### Key Behaviors
 - Applies gravity continuously
-- Allows air control
+- Allows **camera-relative air control**
+- Character **rotates to face movement direction** while falling
+- **Slower rotation speed** (8.0) for realistic air movement
 - Transitions to idle/walking when landing
 
 ---
@@ -225,16 +250,24 @@ Main player controller that coordinates the state machine.
 ```gdscript
 var state_machine: StateMachine  # The state machine instance
 var debug_ui: Control           # Debug UI instance
+var phantom_camera: PhantomCamera3D  # Camera reference for controls
+
+# Camera settings
+@export var mouse_sensitivity: float = 0.05
+@export var min_pitch: float = -89.9
+@export var max_pitch: float = 50
 ```
 
 #### Methods
 
 ##### `_ready() -> void`
 Initializes the state machine and debug UI:
-1. Creates StateMachine instance
-2. Registers all states
-3. Sets initial state to "idle"
-4. Instantiates debug UI
+1. Gets PhantomCamera3D reference
+2. Creates StateMachine instance with camera reference
+3. Registers all states
+4. Sets initial state to "idle"
+5. Instantiates debug UI
+6. Enables mouse capture for third-person camera
 
 ##### `_physics_process(delta: float) -> void`
 Delegates physics processing to the state machine.
@@ -243,7 +276,19 @@ Delegates physics processing to the state machine.
 Updates state machine and debug UI.
 
 ##### `_input(event: InputEvent) -> void`
-Handles debug toggle input and delegates to state machine.
+Handles debug toggle, mouse capture toggle, camera controls, and delegates to state machine.
+
+##### `_handle_camera_input(event: InputEvent) -> void`
+Processes mouse motion for camera rotation using Phantom Camera's third-person mode.
+
+**Parameters:**
+- `event`: Input event (specifically handles InputEventMouseMotion)
+
+**Behavior:**
+- Rotates camera based on mouse movement
+- Applies sensitivity scaling
+- Clamps vertical rotation (pitch) to prevent camera flipping
+- Wraps horizontal rotation (yaw) for smooth 360° movement
 
 ---
 
@@ -260,6 +305,10 @@ The following input actions must be defined in `project.godot`:
 ### Actions
 - `jump` - Space key (physical_keycode: 32)
 
+### Camera Controls
+- **Mouse Movement** - Camera rotation (automatically captured)
+- **ESC key** - Toggle mouse capture/release
+
 ### Debug
 - `toggle_debug` - ~ key (physical_keycode: 96)
 
@@ -273,6 +322,13 @@ All movement and physics constants used across the system:
 # Movement
 const SPEED = 5.0                # Units per second
 const JUMP_VELOCITY = 4.5        # Initial jump velocity
+
+# Camera Controls
+const MOUSE_SENSITIVITY = 0.05   # Mouse look sensitivity
+const MIN_PITCH = -89.9          # Minimum camera pitch (degrees)
+const MAX_PITCH = 50.0           # Maximum camera pitch (degrees)
+const GROUND_ROTATION_SPEED = 10.0  # Character rotation speed on ground
+const AIR_ROTATION_SPEED = 8.0   # Character rotation speed in air
 
 # Debug
 const DEBUG_UPDATE_RATE = 60     # Updates per second (when visible)

@@ -15,11 +15,14 @@ func physics_update(delta: float):
 		return
 	
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-	var direction := (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var direction := get_camera_relative_direction(input_dir)
 	
-	if direction:
+	if direction.length() > 0:
 		player.velocity.x = direction.x * SPEED
 		player.velocity.z = direction.z * SPEED
+		
+		var target_rotation = atan2(direction.x, direction.z)
+		player.rotation.y = lerp_angle(player.rotation.y, target_rotation, 8.0 * delta)
 	else:
 		player.velocity.x = move_toward(player.velocity.x, 0, SPEED)
 		player.velocity.z = move_toward(player.velocity.z, 0, SPEED)
