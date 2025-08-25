@@ -60,11 +60,11 @@ var states: Dictionary = {}
 **Transition Conditions:**
 ```gdscript
 if not player.is_on_floor():
-    state_machine.change_state("falling")
+	state_machine.change_state("falling")
 elif Input.is_action_just_pressed("jump"):
-    state_machine.change_state("jumping")
+	state_machine.change_state("jumping")
 elif input_dir != Vector2.ZERO:
-    state_machine.change_state("walking")
+	state_machine.change_state("walking")
 ```
 
 ### WalkingState
@@ -114,21 +114,21 @@ player.velocity.z = direction.z * SPEED
 **Landing Logic:**
 ```gdscript
 if player.is_on_floor():
-    if input_dir != Vector2.ZERO:
-        state_machine.change_state("walking")
-    else:
-        state_machine.change_state("idle")
+	if input_dir != Vector2.ZERO:
+		state_machine.change_state("walking")
+	else:
+		state_machine.change_state("idle")
 ```
 
 ## State Transition Diagram
 
 ```
-    [Idle] ←→ [Walking]
-      ↓         ↓
-    [Jumping] → [Falling]
-      ↑         ↓
-      └─────────┘
-      (when landing)
+	[Idle] ←→ [Walking]
+	  ↓         ↓
+	[Jumping] → [Falling]
+	  ↑         ↓
+	  └─────────┘
+	  (when landing)
 ```
 
 ## Constants and Configuration
