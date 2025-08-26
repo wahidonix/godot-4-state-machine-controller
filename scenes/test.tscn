@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="3_at5dv"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="4_jcd4p"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_uacia"]
+[ext_resource type="PackedScene" uid="uid://bxk2n5qkm8ij1" path="res://scenes/enemy_dummy.tscn" id="6_enemy"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_bl13t"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
@@ -77,3 +78,12 @@ process_priority = 300
 process_physics_priority = 300
 script = ExtResource("5_uacia")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
+
+[node name="EnemyDummy" parent="." instance=ExtResource("6_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -4, 5)
+
+[node name="EnemyDummy2" parent="." instance=ExtResource("6_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -4, 3)
+
+[node name="EnemyDummy3" parent="." instance=ExtResource("6_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, -10)

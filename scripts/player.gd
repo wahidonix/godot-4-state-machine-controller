@@ -3,6 +3,7 @@ extends CharacterBody3D
 var state_machine: StateMachine
 var debug_ui: Control
 var phantom_camera: PhantomCamera3D
+var lock_on_manager: LockOnManager
 
 @export_group("Camera Controls")
 @export var mouse_sensitivity: float = 0.05
@@ -25,11 +26,22 @@ var phantom_camera: PhantomCamera3D
 @export var dash_duration: float = 0.3
 @export var dash_cooldown: float = 1.0
 
+@export_group("Lock-On Settings")
+@export var lock_on_range: float = 15.0
+@export var lock_on_angle: float = 60.0
+@export var auto_unlock_distance: float = 20.0
+
 var dash_cooldown_timer: float = 0.0
 
 func _ready():
 	phantom_camera = get_tree().current_scene.get_node("PlayerCam")
 	state_machine = StateMachine.new(self, phantom_camera)
+	lock_on_manager = LockOnManager.new(self, phantom_camera)
+	
+	# Configure lock-on manager with exported settings
+	lock_on_manager.lock_on_range = lock_on_range
+	lock_on_manager.lock_on_angle = lock_on_angle
+	lock_on_manager.auto_unlock_distance = auto_unlock_distance
 	
 	state_machine.add_state("idle", IdleState.new(self))
 	state_machine.add_state("walking", WalkingState.new(self))
@@ -52,8 +64,13 @@ func _physics_process(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	state_machine.update(delta)
+	lock_on_manager.update_lock_on(delta)
+	
 	if phantom_camera and phantom_camera.get_follow_mode() == phantom_camera.FollowMode.THIRD_PERSON:
-		_handle_controller_camera(delta)
+		if lock_on_manager.is_locked_on():
+			_handle_lock_on_camera(delta)
+		else:
+			_handle_controller_camera(delta)
 	
 	# Update dash cooldown
 	if dash_cooldown_timer > 0.0:
@@ -67,6 +84,9 @@ func _input(event: InputEvent) -> void:
 		if debug_ui:
 			debug_ui.toggle_visibility()
 	
+	if event.is_action_pressed("lock_on"):
+		lock_on_manager.toggle_lock_on()
+	
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
@@ -74,7 +94,8 @@ func _input(event: InputEvent) -> void:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
 	if phantom_camera and phantom_camera.get_follow_mode() == phantom_camera.FollowMode.THIRD_PERSON:
-		_handle_camera_input(event)
+		if not lock_on_manager.is_locked_on():
+			_handle_camera_input(event)
 	
 	state_machine.handle_input(event)
 
@@ -111,3 +132,36 @@ func _handle_controller_camera(delta: float) -> void:
 		camera_rotation_degrees.y = wrapf(camera_rotation_degrees.y, 0, 360)
 		
 		phantom_camera.set_third_person_rotation_degrees(camera_rotation_degrees)
+
+func _handle_lock_on_camera(delta: float) -> void:
+	if not lock_on_manager.is_locked_on():
+		return
+		
+	var target_position = lock_on_manager.get_current_target_position()
+	var camera_position = phantom_camera.global_position
+	var direction_to_target = (target_position - camera_position).normalized()
+	
+	# Calculate the rotation needed to look at the target
+	var target_transform = phantom_camera.global_transform.looking_at(target_position, Vector3.UP)
+	var target_rotation = target_transform.basis.get_euler()
+	
+	# Convert to degrees for phantom camera
+	var target_rotation_degrees = Vector3(
+		rad_to_deg(target_rotation.x),
+		rad_to_deg(target_rotation.y),
+		rad_to_deg(target_rotation.z)
+	)
+	
+	# Smooth interpolation to target
+	var current_rotation = phantom_camera.get_third_person_rotation_degrees()
+	var lerp_speed = 5.0  # Adjust for faster/slower lock-on camera
+	
+	current_rotation.x = lerp_angle(deg_to_rad(current_rotation.x), target_rotation.x, lerp_speed * delta)
+	current_rotation.y = lerp_angle(deg_to_rad(current_rotation.y), target_rotation.y, lerp_speed * delta)
+	
+	# Convert back to degrees
+	current_rotation.x = rad_to_deg(current_rotation.x)
+	current_rotation.y = rad_to_deg(current_rotation.y)
+	current_rotation.y = wrapf(current_rotation.y, 0, 360)
+	
+	phantom_camera.set_third_person_rotation_degrees(current_rotation)
