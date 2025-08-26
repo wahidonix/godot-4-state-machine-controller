@@ -4,6 +4,7 @@ var state_machine: StateMachine
 var debug_ui: Control
 var phantom_camera: PhantomCamera3D
 var lock_on_manager: LockOnManager
+var lock_on_indicator: LockOnIndicator
 
 @export_group("Camera Controls")
 @export var mouse_sensitivity: float = 0.05
@@ -58,6 +59,15 @@ func _ready():
 	get_tree().current_scene.add_child.call_deferred(debug_ui)
 	debug_ui.set_player(self)
 	
+	# Setup lock-on indicator
+	var indicator_scene = preload("res://scenes/lock_on_indicator.tscn")
+	lock_on_indicator = indicator_scene.instantiate()
+	get_tree().current_scene.add_child.call_deferred(lock_on_indicator)
+	
+	# Connect lock-on manager signals
+	lock_on_manager.target_locked.connect(_on_target_locked)
+	lock_on_manager.target_unlocked.connect(_on_target_unlocked)
+	
 	if phantom_camera and phantom_camera.get_follow_mode() == phantom_camera.FollowMode.THIRD_PERSON:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
@@ -84,6 +94,14 @@ func _process(delta: float) -> void:
 		
 	if debug_ui:
 		debug_ui.update_debug_info()
+	
+	# Update lock-on indicator
+	if lock_on_indicator and lock_on_manager.is_locked_on():
+		var target_pos = lock_on_manager.get_current_target_position()
+		if target_pos != Vector3.ZERO:
+			if not lock_on_indicator.camera:
+				lock_on_indicator.set_camera(get_tree().current_scene.get_node("Camera3D"))
+			lock_on_indicator.show_indicator(target_pos)
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_debug"):
@@ -184,6 +202,16 @@ func _handle_lock_on_camera(delta: float) -> void:
 	current_rotation.y = wrapf(current_rotation.y, 0, 360)
 	
 	phantom_camera.set_third_person_rotation_degrees(current_rotation)
+
+func _on_target_locked(target: Node3D):
+	if lock_on_indicator and target.has_method("get_lock_on_point"):
+		var lock_point = target.get_lock_on_point()
+		if lock_point:
+			lock_on_indicator.show_indicator(lock_point.global_position)
+
+func _on_target_unlocked():
+	if lock_on_indicator:
+		lock_on_indicator.hide_indicator()
 
 func _handle_lock_on_input(event: InputEvent) -> void:
 	# Handle mouse movement for target cycling when locked on

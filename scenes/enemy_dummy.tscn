@@ -1,9 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://bxk2n5qkm8ij1"]
+[gd_scene load_steps=5 format=3 uid="uid://d06na46nmqneb"]
 
-[ext_resource type="Script" uid="uid://cg2xj1vl6hqvt" path="res://scripts/enemy_dummy.gd" id="1_dummy"]
+[ext_resource type="Script" uid="uid://cgn5rciyhd0ns" path="res://scripts/enemy_dummy.gd" id="1_dummy"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_enemy"]
-height = 2.0
 radial_segments = 8
 rings = 4
 
@@ -11,7 +10,6 @@ rings = 4
 albedo_color = Color(0.8, 0.2, 0.2, 1)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_enemy"]
-height = 2.0
 
 [node name="EnemyDummy" type="CharacterBody3D" groups=["lockable"]]
 script = ExtResource("1_dummy")
@@ -24,4 +22,3 @@ surface_material_override/0 = SubResource("StandardMaterial3D_enemy")
 shape = SubResource("CapsuleShape3D_enemy")
 
 [node name="LockOnPoint" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
