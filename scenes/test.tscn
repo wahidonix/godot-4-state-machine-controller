@@ -1,11 +1,11 @@
-[gd_scene load_steps=11 format=3 uid="uid://dgocunbnntxxo"]
+[gd_scene load_steps=12 format=3 uid="uid://dgocunbnntxxo"]
 
 [ext_resource type="Texture2D" uid="uid://dkjfn8grggt2y" path="res://textures/Dark/texture_07.png" id="1_j5jx5"]
 [ext_resource type="PackedScene" uid="uid://bh75eqs3layr" path="res://scenes/player.tscn" id="2_lpvoh"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="3_at5dv"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="4_jcd4p"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_uacia"]
-[ext_resource type="PackedScene" uid="uid://bxk2n5qkm8ij1" path="res://scenes/enemy_dummy.tscn" id="6_enemy"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_dummy.tscn" id="6_enemy"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_bl13t"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
@@ -80,10 +80,10 @@ script = ExtResource("5_uacia")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
 [node name="EnemyDummy" parent="." instance=ExtResource("6_enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -4, 5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.12774, -3.00002, 13.5041)
 
 [node name="EnemyDummy2" parent="." instance=ExtResource("6_enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -4, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.62964, -2.62263, 13.3743)
 
 [node name="EnemyDummy3" parent="." instance=ExtResource("6_enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, -10)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.15438, 11.1069)

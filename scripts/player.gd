@@ -30,8 +30,10 @@ var lock_on_manager: LockOnManager
 @export var lock_on_range: float = 15.0
 @export var lock_on_angle: float = 60.0
 @export var auto_unlock_distance: float = 20.0
+@export var target_switch_delay: float = 0.3
 
 var dash_cooldown_timer: float = 0.0
+var target_switch_cooldown: float = 0.0
 
 func _ready():
 	phantom_camera = get_tree().current_scene.get_node("PlayerCam")
@@ -75,6 +77,10 @@ func _process(delta: float) -> void:
 	# Update dash cooldown
 	if dash_cooldown_timer > 0.0:
 		dash_cooldown_timer -= delta
+	
+	# Update target switch cooldown
+	if target_switch_cooldown > 0.0:
+		target_switch_cooldown -= delta
 		
 	if debug_ui:
 		debug_ui.update_debug_info()
@@ -87,6 +93,17 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("lock_on"):
 		lock_on_manager.toggle_lock_on()
 	
+	# Handle target cycling when locked on with right stick
+	if lock_on_manager.is_locked_on() and target_switch_cooldown <= 0.0:
+		if event.is_action_pressed("cycle_target_left"):
+			lock_on_manager.cycle_target_left()
+			target_switch_cooldown = target_switch_delay
+			return  # Consume the input
+		elif event.is_action_pressed("cycle_target_right"):
+			lock_on_manager.cycle_target_right()
+			target_switch_cooldown = target_switch_delay
+			return  # Consume the input
+	
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
@@ -94,7 +111,9 @@ func _input(event: InputEvent) -> void:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
 	if phantom_camera and phantom_camera.get_follow_mode() == phantom_camera.FollowMode.THIRD_PERSON:
-		if not lock_on_manager.is_locked_on():
+		if lock_on_manager.is_locked_on():
+			_handle_lock_on_input(event)
+		else:
 			_handle_camera_input(event)
 	
 	state_machine.handle_input(event)
@@ -165,3 +184,16 @@ func _handle_lock_on_camera(delta: float) -> void:
 	current_rotation.y = wrapf(current_rotation.y, 0, 360)
 	
 	phantom_camera.set_third_person_rotation_degrees(current_rotation)
+
+func _handle_lock_on_input(event: InputEvent) -> void:
+	# Handle mouse movement for target cycling when locked on
+	if event is InputEventMouseMotion and target_switch_cooldown <= 0.0:
+		var mouse_threshold = 50.0  # Pixels needed to trigger target switch
+		
+		if abs(event.relative.x) > mouse_threshold:
+			if event.relative.x > 0:
+				lock_on_manager.cycle_target_right()
+				target_switch_cooldown = target_switch_delay
+			else:
+				lock_on_manager.cycle_target_left()
+				target_switch_cooldown = target_switch_delay

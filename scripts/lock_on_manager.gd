@@ -65,6 +65,81 @@ func toggle_lock_on():
 	else:
 		lock_on_to_best_target()
 
+func cycle_target_left():
+	if not is_locked_on():
+		return
+		
+	var available_targets = get_available_targets()
+	if available_targets.size() <= 1:
+		return
+		
+	var current_index = available_targets.find(current_target)
+	if current_index == -1:
+		return
+		
+	# Move to previous target (wrapping around)
+	var new_index = (current_index - 1 + available_targets.size()) % available_targets.size()
+	lock_on_to_target(available_targets[new_index])
+
+func cycle_target_right():
+	if not is_locked_on():
+		return
+		
+	var available_targets = get_available_targets()
+	if available_targets.size() <= 1:
+		return
+		
+	var current_index = available_targets.find(current_target)
+	if current_index == -1:
+		return
+		
+	# Move to next target (wrapping around)
+	var new_index = (current_index + 1) % available_targets.size()
+	lock_on_to_target(available_targets[new_index])
+
+func get_available_targets() -> Array:
+	if not player or not player.get_tree():
+		return []
+		
+	var lockable_enemies = player.get_tree().get_nodes_in_group("lockable")
+	var valid_targets = []
+	
+	if lockable_enemies.is_empty():
+		return valid_targets
+	
+	var camera_transform = camera.global_transform
+	var camera_forward = -camera_transform.basis.z
+	
+	for enemy in lockable_enemies:
+		if not enemy.has_method("get_lock_on_point"):
+			continue
+			
+		var lock_point = enemy.get_lock_on_point()
+		if not lock_point:
+			continue
+			
+		var distance = player.global_position.distance_to(lock_point.global_position)
+		if distance > lock_on_range:
+			continue
+		
+		# Check if target is within lock-on angle
+		var direction_to_target = (lock_point.global_position - camera.global_position).normalized()
+		var angle = rad_to_deg(camera_forward.angle_to(direction_to_target))
+		
+		if angle > lock_on_angle / 2.0:
+			continue
+			
+		valid_targets.append(enemy)
+	
+	# Sort targets by horizontal position relative to camera (left to right)
+	valid_targets.sort_custom(func(a, b): 
+		var pos_a = camera.to_local(a.get_lock_on_point().global_position)
+		var pos_b = camera.to_local(b.get_lock_on_point().global_position)
+		return pos_a.x < pos_b.x
+	)
+	
+	return valid_targets
+
 func lock_on_to_best_target():
 	var target = find_best_target()
 	if target:
