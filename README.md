@@ -13,10 +13,10 @@ This project provides a modular 3D player controller for Godot 4.4.1 using a sta
 
 ## Documentation Structure
 
-- [State Machine Architecture](state-machine.md) - Detailed explanation of the state machine system
-- [Adding New States](adding-states.md) - Guide for extending the controller with new behaviors
-- [Debug Tools](debug-tools.md) - Using the built-in debugging features
-- [API Reference](api-reference.md) - Complete class and method documentation
+- [State Machine Architecture](docs/state-machine.md) - Detailed explanation of the state machine system
+- [Adding New States](docs/adding-states.md) - Guide for extending the controller with new behaviors
+- [Debug Tools](docs/debug-tools.md) - Using the built-in debugging features
+- [API Reference](docs/api-reference.md) - Complete class and method documentation
 
 ## Features
 
